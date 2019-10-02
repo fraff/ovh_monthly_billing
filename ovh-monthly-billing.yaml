@@ -1,0 +1,24 @@
+# https://docs.ansible.com/ansible/latest/search.html?q=openstack&check_keywords=yes&area=default
+
+- name: enable monthly billing
+  hosts: "{{ host | default(omit) }}"
+  gather_facts: false
+  become: false
+  connection: local
+
+  tasks:
+    - os_server_facts:
+        cloud: "{{ flash_project_name }}"
+        region_name: "{{ ovh_region_name }}"
+        server: "{{ inventory_hostname_short }}.{{ flash_env_name }}"
+      # force run even in check_mode
+      check_mode: no
+
+#    - debug: msg="{{ openstack_servers[0] }}"
+
+    - name: ovh_monthly_billing
+      ovh_monthly_billing:
+        project_id: "{{ openstack_servers.0.tenant_id }}"
+        instance_id: "{{ openstack_servers.0.id }}"
+      when: openstack_servers.0 is defined
+
